@@ -12,7 +12,7 @@ const Footer = () => {
             Pesquisa
           </li>
           <li className="flex items-center justify-center w-full h-14">
-            <p className="flex gap-2">
+            <p className="flex flex-col items-center">
               <span>Anunciar</span> <span>gratis</span>
             </p>
           </li>

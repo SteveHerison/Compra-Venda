@@ -28,7 +28,7 @@ const App = () => {
         {showBar && <MenuComponent />}
         <div className="flex flex-col w-full h-full">
           <Header />
-          <div className="flex-1 px-2 py-5">
+          <div className="flex-1 px-2 py-2 md:px-10">
             <MainRouter />
           </div>
           <Footer />

@@ -1,6 +1,7 @@
 import React from "react";
 import Look from "../../assets/look.svg";
 import User from "../../assets/categorias/user.svg";
+import { Link } from "react-router-dom";
 
 const ElementosHeader = () => {
   return (
@@ -20,8 +21,12 @@ const ElementosHeader = () => {
           <p>Minha Conta</p> <p>{">"}</p>
         </div>
         <ul className="flex gap-4">
-          <li>Sobre</li>
-          <li>Ajuda</li>
+          <li>
+            <Link to={"/sobre"}> Sobre</Link>
+          </li>
+          <li>
+            <Link to={"/ajuda"}> Ajuda</Link>
+          </li>
         </ul>
         <button className="p-2 text-white bg-orange-400 rounded-xl">
           Anunciar grátis

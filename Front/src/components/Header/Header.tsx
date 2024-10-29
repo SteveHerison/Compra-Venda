@@ -4,6 +4,7 @@ import Logo from "../../assets/ds.svg";
 
 import { Context } from "../../contexts/ContextOn";
 import ElementosHeader from "./ElementosHeader";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const { setShowbar, showBar } = useContext(Context);
@@ -18,7 +19,9 @@ const Header = () => {
       <div className="fixed top-0 left-0 z-10 w-full h-20 bg-white border-b shadow-lg ">
         <nav className="flex items-center justify-between h-full px-2 md:px-10">
           <div className="w-20 h-20 md:w-28 md:h-28">
-            <img src={Logo} alt="" className="object-cover w-full h-full" />
+            <Link to={"/"}>
+              <img src={Logo} alt="" className="object-cover w-full h-full" />
+            </Link>
           </div>
           <ElementosHeader />
           {!showBar ? (

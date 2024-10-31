@@ -5,10 +5,10 @@ export const isLogged = () => {
   return token ? true : false;
 };
 
-export const doLogin = (token, rememberPassword = false) => {
+export const doLogin = (token: string, rememberPassword = false) => {
   if (rememberPassword) {
-    Cookies.set("token", token, { expires: 999 });
+    Cookies.set("token", token, { expires: 999 }); // Token armazenado por 999 dias
   } else {
-    Cookies.set("token", token);
+    Cookies.set("token", token); // Token armazenado até o fechamento do navegador
   }
 };

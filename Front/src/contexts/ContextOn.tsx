@@ -1,5 +1,7 @@
-import React, { createContext, ReactNode, useState, useEffect } from "react";
+import React, { createContext, ReactNode, useState } from "react";
 import { PropsOn } from "../types/contextOnType";
+import { createUser, createPost } from "../services/apiService";
+
 // Estado inicial do contexto
 const initialState: PropsOn = {
   name: "",
@@ -10,9 +12,11 @@ const initialState: PropsOn = {
   setName: () => {},
 };
 export const Context = createContext<PropsOn>(initialState);
+
 type ContextProviderProps = {
   children: ReactNode;
 };
+
 export const ContextProvider: React.FC<ContextProviderProps> = ({
   children,
 }) => {

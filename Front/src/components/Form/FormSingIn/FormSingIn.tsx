@@ -1,35 +1,60 @@
 import React, { useState } from "react";
 import InputForm from "../InputForm";
 import ButtonForm from "../ButtonForm";
-import useApi from "../../../helpers/ComprasAPI";
+import useApi, { LoginResponse } from "../../../helpers/ComprasAPI";
 import { doLogin } from "../../../helpers/AuthHandler";
 
-const FormSingIn = () => {
+const FormSignIn = () => {
   const api = useApi();
   const [disable, setDisable] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Corrigido para receber uma string de erro ou null
-  const [email, setEmail] = useState(""); // Estado para armazenar o email
-  const [password, setPassword] = useState(""); // Estado para armazenar a senha
-  const [rememberPassword, setRememberPassword] = useState(false); // Adiciona estado para lembrar de mim
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberPassword, setRememberPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDisable(true);
+    setError(null); // Resetar erro antes de enviar a solicitação
 
-    const json = await api.login(email, password);
-    if (json?.error) {
-      // Verifica se json possui a propriedade error
-      setError(json.error);
-    } else {
-      doLogin(json.token, rememberPassword);
-      //   window.location.href = "/";
+    try {
+      console.log("Fazendo login com:", { email, password });
+      const json: LoginResponse = await api.login(email, password);
+      console.log("Resposta da API:", json);
+
+      if (json.error) {
+        console.log("Erro ao fazer login:", json.message); // Log de erro detalhado
+        setError(json.message || "Erro desconhecido");
+      } else {
+        doLogin(json.token!, rememberPassword); // Usar o token com '!'
+
+        // Armazenar informações do usuário no localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: json.user?.id,
+            name: json.user?.name,
+            email: json.user?.email,
+          })
+        );
+
+        // Limpar os campos após login
+        setEmail("");
+        setPassword("");
+
+        window.location.href = "/"; // Redirecionar após login
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      setError("Erro ao realizar login. Tente novamente.");
+    } finally {
+      setDisable(false);
     }
-    setDisable(false);
   };
 
   return (
     <form className="w-full px-4 md:px-20" onSubmit={handleSubmit}>
-      {error && <p className="text-red-500">{error}</p>}{" "}
+      {error && <p className="text-red-500">{error}</p>}
       <InputForm
         title="E-mail"
         id="email"
@@ -66,4 +91,4 @@ const FormSingIn = () => {
   );
 };
 
-export default FormSingIn;
+export default FormSignIn;

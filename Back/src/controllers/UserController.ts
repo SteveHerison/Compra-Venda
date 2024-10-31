@@ -1,45 +1,119 @@
-import { Request, Response } from "express"; // Certifique-se de importar Request e Response do express
+import { Request, Response } from "express";
 import { prisma } from "../database";
-
-interface CreateUserRequest {
-  name: string;
+import { compare } from "bcryptjs";
+import { sign } from "jsonwebtoken";
+import { hash } from "bcryptjs"; //
+interface LoginRequest {
   email: string;
+  password: string;
 }
 
 export default {
-  async createUser(req: Request<{}, {}, CreateUserRequest>, res: Response) {
+  async login(req: Request<{}, {}, LoginRequest>, res: Response) {
     try {
-      const { name, email } = req.body;
+      const { email, password } = req.body;
 
-      // Verifica se o usuário já existe
-      const userExist = await prisma.user.findUnique({ where: { email } });
+      // Verifique se o e-mail e a senha foram recebidos
+      console.log("E-mail fornecido:", email);
+      console.log("Senha fornecida:", password);
+      console.log("Requisição de login recebida"); // Adicione este log
 
-      if (userExist) {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          password: true, // Certifique-se de que a senha está sendo buscada
+        },
+      });
+
+      // Se o usuário não for encontrado
+      if (!user) {
+        console.log("Usuário não encontrado.");
         return res.status(400).json({
-          // Retorna um status 400 para erro de solicitação
           error: true,
-          message: "Erro: Usuário já existe!",
+          message: "Erro: Usuário não encontrado!",
         });
       }
 
-      // Criação do novo usuário
+      console.log("Usuário encontrado:", user); // Log do usuário encontrado
+
+      const isPasswordValid = await compare(password, user.password);
+      console.log("Comparando senha, resultado:", isPasswordValid); // Log do resultado da comparação
+
+      // Se a senha for inválida
+      if (!isPasswordValid) {
+        console.log("Senha incorreta.");
+        return res.status(400).json({
+          error: true,
+          message: "Erro: Senha incorreta ou E-mail incorreto!",
+        });
+      }
+
+      const token = sign({ id: user.id, email: user.email }, "SEU_SEGREDO", {
+        expiresIn: "1h",
+      });
+
+      return res.json({
+        error: false,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Erro no login:", error.message); // Log de erro
+        return res.status(500).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro inesperado." });
+    }
+  },
+
+  async createUser(req: Request, res: Response) {
+    try {
+      const { name, email, password } = req.body;
+
+      console.log("Dados recebidos para criação do usuário:", {
+        name,
+        email,
+        password,
+      });
+
+      // Verifique se os dados foram recebidos corretamente
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          error: true,
+          message: "Erro: Todos os campos são obrigatórios!",
+        });
+      }
+
+      // Hash da senha antes de salvar
+      const hashedPassword = await hash(password, 10);
+
       const user = await prisma.user.create({
         data: {
           name,
           email,
+          password: hashedPassword,
         },
       });
 
-      // Retornando o usuário criado com status 201
       return res.json({
         error: false,
-        message: "Sucesso: Usuário cadastrado com sucesso!",
-        user,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
       });
     } catch (error) {
-      // Tratamento de erro
+      console.error("Erro ao criar usuário:", error);
       if (error instanceof Error) {
-        return res.status(500).json({ message: error.message }); // Retorna 500 em caso de erro interno do servidor
+        return res.status(500).json({ message: error.message });
       }
       return res.status(500).json({ message: "Erro inesperado." });
     }

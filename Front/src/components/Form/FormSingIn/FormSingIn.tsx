@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import InputForm from "../InputForm";
 import ButtonForm from "../ButtonForm";
-import useApi, { LoginResponse } from "../../../helpers/ComprasAPI";
+import { login, LoginResponse } from "../../../services/apiService";
 import { doLogin } from "../../../helpers/AuthHandler";
 
 const FormSignIn = () => {
-  const api = useApi();
   const [disable, setDisable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -15,34 +14,26 @@ const FormSignIn = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDisable(true);
-    setError(null); // Resetar erro antes de enviar a solicitação
+    setError(null);
 
     try {
-      console.log("Fazendo login com:", { email, password });
-      const json: LoginResponse = await api.login(email, password);
-      console.log("Resposta da API:", json);
+      const response: LoginResponse = await login({ email, password });
 
-      if (json.error) {
-        console.log("Erro ao fazer login:", json.message); // Log de erro detalhado
-        setError(json.message || "Erro desconhecido");
-      } else {
-        doLogin(json.token!, rememberPassword); // Usar o token com '!'
-
-        // Armazenar informações do usuário no localStorage
+      if (response.error) {
+        setError(response.message || "Erro desconhecido");
+      } else if (response.token) {
+        doLogin(response.token, rememberPassword);
         localStorage.setItem(
           "user",
           JSON.stringify({
-            id: json.user?.id,
-            name: json.user?.name,
-            email: json.user?.email,
+            id: response.user?.id,
+            name: response.user?.name,
+            email: response.user?.email,
           })
         );
-
-        // Limpar os campos após login
         setEmail("");
         setPassword("");
-
-        window.location.href = "/"; // Redirecionar após login
+        window.location.href = "/home";
       }
     } catch (err) {
       console.error("Erro na requisição:", err);

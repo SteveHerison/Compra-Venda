@@ -1,3 +1,4 @@
+// helpers/AuthHandler.ts
 import Cookies from "js-cookie";
 
 export const isLogged = () => {
@@ -7,8 +8,8 @@ export const isLogged = () => {
 
 export const doLogin = (token: string, rememberPassword = false) => {
   if (rememberPassword) {
-    Cookies.set("token", token, { expires: 999 }); // Token armazenado por 999 dias
+    Cookies.set("token", token, { expires: 999 });
   } else {
-    Cookies.set("token", token); // Token armazenado até o fechamento do navegador
+    Cookies.set("token", token);
   }
 };
